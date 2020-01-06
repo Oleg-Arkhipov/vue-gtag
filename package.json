@@ -55,9 +55,6 @@
     "vuejs"
   ],
   "main": "dist/vue-gtag.js",
-  "files": [
-    "dist"
-  ],
   "bugs": {
     "url": "https://github.com/MatteoGabriele/vue-gtag/issues"
   },
