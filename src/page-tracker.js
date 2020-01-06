@@ -1,9 +1,12 @@
+import Vue from 'vue';
+
 import { getRouter, getOptions } from "./install";
 import { warn } from "./util";
 import pageview from "./api/pageview";
 import screenview from "./api/screenview";
+import {getTitle} from '@app/utils/title-mixin';
 
-export const trackPage = (to, from) => {
+export const trackPage = (to, from, title) => {
   if (to.path === from.path) {
     return;
   }
@@ -26,7 +29,7 @@ export const trackPage = (to, from) => {
     };
   } else {
     template = {
-      page_title: to.name,
+      page_title: title,
       page_path: to.path,
       page_location: window.location.href
     };
@@ -53,13 +56,22 @@ export const trackPage = (to, from) => {
 export const init = Router => {
   const { onBeforeTrack, onAfterTrack } = getOptions();
 
-  /* istanbul ignore next */
-  Router.onReady(() => {
-    Router.afterEach((to, from) => {
+  Vue.mixin({
+    mounted() {
+      if (!this.$options.title) {
+        return;
+      }
+
+      const title = getTitle(this);
+      const to = Router.currentRoute;
+      const from = {
+        path: null,
+      };
+
       onBeforeTrack(to, from);
-      trackPage(to, from);
+      trackPage(to, from, title);
       onAfterTrack(to, from);
-    });
+    },
   });
 };
 
