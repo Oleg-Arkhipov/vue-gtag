@@ -56,9 +56,16 @@ export const trackPage = (to, from, title) => {
 export const init = Router => {
   const { onBeforeTrack, onAfterTrack } = getOptions();
 
+  let isFirstTime = true;
+
   Vue.mixin({
     mounted() {
       if (!this.$options.title) {
+        return;
+      }
+
+      if (isFirstTime) {
+        isFirstTime = false;
         return;
       }
 
