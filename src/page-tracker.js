@@ -1,12 +1,9 @@
-import Vue from 'vue';
-
 import { getRouter, getOptions } from "./install";
 import { warn } from "./util";
 import pageview from "./api/pageview";
 import screenview from "./api/screenview";
-import {getTitle} from '@app/utils/title-mixin';
 
-export const trackPage = (to, from, title) => {
+export const trackPage = (to, from) => {
   if (to.path === from.path) {
     return;
   }
@@ -29,7 +26,7 @@ export const trackPage = (to, from, title) => {
     };
   } else {
     template = {
-      page_title: title,
+      page_title: window.document.title,
       page_path: to.path,
       page_location: window.location.href
     };
@@ -56,29 +53,16 @@ export const trackPage = (to, from, title) => {
 export const init = Router => {
   const { onBeforeTrack, onAfterTrack } = getOptions();
 
-  let isFirstTime = true;
-
-  Vue.mixin({
-    mounted() {
-      if (!this.$options.title) {
-        return;
-      }
-
-      if (isFirstTime) {
-        isFirstTime = false;
-        return;
-      }
-
-      const title = getTitle(this);
-      const to = Router.currentRoute;
-      const from = {
-        path: null,
-      };
-
-      onBeforeTrack(to, from);
-      trackPage(to, from, title);
-      onAfterTrack(to, from);
-    },
+  /* istanbul ignore next */
+  Router.onReady(() => {
+    Router.afterEach((to, from) => {
+      // Setting timeout as hack because afterEach hook is called when page title is not changed yet.
+      setTimeout(() => {
+        onBeforeTrack(to, from);
+        trackPage(to, from);
+        onAfterTrack(to, from);
+      }, 500);
+    });
   });
 };
 
